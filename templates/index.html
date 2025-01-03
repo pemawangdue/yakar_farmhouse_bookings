@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        /* Styling for the calendar container */
+        .calendar-container {
+            padding-top: 20px;
+        }
+
+        /* Grid system to display the calendar */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 7 columns for days of the week */
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .day {
+            background-color: #fff;
+            text-align: center;
+            padding: 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .day:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Materialize card styling for events (optional visual enhancement) */
+        .event-card {
+            margin-top: 10px;
+            padding: 5px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+        .calendar-header .month-year {
+            font-size: 20px;
+        }
+    </style>
+ <!-- Materialize JS -->
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+ <script>
+     // Initialize Materialize modal
+     $(document).ready(function(){
+        $('.modal').modal();
+
+        // Initialize the current date
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        // Function to update the calendar
+        function updateCalendar() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            // Display the current month and year
+            $("#monthYearDisplay").text(`${monthNames[currentMonth]} ${currentYear}`);
+
+            // Clear existing days
+            $('#calendarDays').empty();
+
+            // Create empty divs for leading empty days of the month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                $('#calendarDays').append('<div class="day"></div>');
+            }
+
+            // Add the days of the month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayElement = $('<div class="day"></div>').text(i).data('day', i);
+                dayElement.click(function(){
+                    const day = $(this).data('day');
+                    $('#eventModal').modal('open');
+                    console.log('Selected day: ' + day);
+                });
+                $('#calendarDays').append(dayElement);
+            }
+        }
+
+        // Call the function to update the calendar
+        updateCalendar();
+
+        // Handle the previous month button click
+        $('#prevMonth').click(function(){
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendar();
+        });
+
+        // Handle the next month button click
+        $('#nextMonth').click(function(){
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+                updateCalendar();
+            });
+
+            // Save event (basic example)
+            $('#saveEvent').click(function(){
+                var title = $('#event-title').val();
+                var description = $('#event-description').val();
+                if (title && description) {
+                    alert('Event saved: ' + title + '\n' + description);
+                    $('#eventModal').modal('close');
+                } else {
+                    alert('Please fill in all fields!');
+                }
+            });
+        });
+ </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="nav-wrapper">
+              <a href="#" class="brand-logo">Logo</a>
+              <ul id="nav-mobile" class="right hide-on-med-and-down">
+                <li><a href="sass.html">Sass</a></li>
+                <li><a href="badges.html">Components</a></li>
+                <li><a href="collapsible.html">JavaScript</a></li>
+              </ul>
+            </div>
+          </nav>
+    </header>
+    <main>
+        <div class="container calendar-container">
+            <!-- Page Content goes here -->
+            <h4 class="center-align">Google Calendar-like UI</h4>
+
+            <div class="calendar-header">
+                <button id="prevMonth" class="btn waves-effect waves-light">←</button>
+                <div class="month-year center-align">
+                    <span id="monthYearDisplay">Jan</span>
+                </div>
+                <button id="nextMonth" class="btn waves-effect waves-light">→</button>
+            </div>
+            <!-- Calendar -->
+            <div class="calendar">
+                <div class="day">Sun</div>
+                <div class="day">Mon</div>
+                <div class="day">Tue</div>
+                <div class="day">Wed</div>
+                <div class="day">Thu</div>
+                <div class="day">Fri</div>
+                <div class="day">Sat</div>
+
+                <!-- Days (Example days for a month) -->
+                <div class="day" data-day="1">1</div>
+                <div class="day" data-day="2">2</div>
+                <div class="day" data-day="3">3</div>
+                <div class="day" data-day="4">4</div>
+                <div class="day" data-day="5">5</div>
+                <div class="day" data-day="6">6</div>
+                <div class="day" data-day="7">7</div>
+                <div class="day" data-day="8">8</div>
+                <div class="day" data-day="9">9</div>
+                <div class="day" data-day="10">10</div>
+                <div class="day" data-day="11">11</div>
+                <div class="day" data-day="12">12</div>
+                <div class="day" data-day="13">13</div>
+                <div class="day" data-day="14">14</div>
+                <div class="day" data-day="15">15</div>
+                <div class="day" data-day="16">16</div>
+                <div class="day" data-day="17">17</div>
+                <div class="day" data-day="18">18</div>
+                <div class="day" data-day="19">19</div>
+                <div class="day" data-day="20">20</div>
+                <div class="day" data-day="21">21</div>
+                <div class="day" data-day="22">22</div>
+                <div class="day" data-day="23">23</div>
+                <div class="day" data-day="24">24</div>
+                <div class="day" data-day="25">25</div>
+                <div class="day" data-day="26">26</div>
+                <div class="day" data-day="27">27</div>
+                <div class="day" data-day="28">28</div>
+                <div class="day" data-day="29">29</div>
+                <div class="day" data-day="30">30</div>
+                <div class="day" data-day="31">31</div>
+            </div>
+            <!-- Event Modal -->
+            <div id="eventModal" class="modal">
+                <div class="modal-content">
+                    <h5>Add Event</h5>
+                    <div class="input-field">
+                        <input id="event-title" type="text" class="validate">
+                        <label for="event-title">Event Title</label>
+                    </div>
+                    <div class="input-field">
+                        <textarea id="event-description" class="materialize-textarea"></textarea>
+                        <label for="event-description">Event Description</label>
+                    </div>
+                    <button class="btn waves-effect waves-light" id="saveEvent">Save Event</button>
+                </div>
+            </div>
+
+            <!-- Event Card (Example event) -->
+            <div class="card event-card">
+                <div class="card-content">
+                    <span class="card-title">Event Title</span>
+                    <p>Description of the event goes here.</p>
+                </div>
+            </div>
+        </div>
+        </div>    
+    </main>
+    <footer class="page-footer">
+        <div class="container">
+            <div class="row">
+            <div class="col l6 s12">
+                <h5 class="white-text">Footer Content</h5>
+                <p class="grey-text text-lighten-4">You can use rows and columns here to organize your footer content.</p>
+            </div>
+            <div class="col l4 offset-l2 s12">
+                <h5 class="white-text">Links</h5>
+                <ul>
+                <li><a class="grey-text text-lighten-3" href="#!">Link 1</a></li>
+                <li><a class="grey-text text-lighten-3" href="#!">Link 2</a></li>
+                <li><a class="grey-text text-lighten-3" href="#!">Link 3</a></li>
+                <li><a class="grey-text text-lighten-3" href="#!">Link 4</a></li>
+                </ul>
+            </div>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <div class="container">
+            © 2014 Copyright Text
+            <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+            </div>
+        </div>        
+    </footer>
+</body>
+</html>
