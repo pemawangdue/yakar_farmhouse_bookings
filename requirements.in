@@ -1,0 +1,6 @@
+mangum
+boto3
+fastapi
+requests
+uvicorn
+pytest
