@@ -29,6 +29,16 @@
     "@aws-cdk/core:target-partitions": [
       "aws",
       "aws-cn"
-    ]
+    ],
+    "dev_us-east-1":{
+      "region": "us-east-1",
+      "logLevel": "DEBUG",
+      "accountId": ""
+    },
+    "prod_us-east-1":{
+      "region": "us-east-1",
+      "logLevel": "INFO",
+      "accountId":""
+    }
   }
 }

@@ -1,22 +1,16 @@
 import { Stack, StackProps, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { BuildConfig } from '../bin/build_config';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { AttributeType, Table, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
-import {
-  Cors,
-  LambdaIntegration,
-  RestApi,
-  ApiKeySourceType,
-  ApiKey,
-  UsagePlan,
-} from 'aws-cdk-lib/aws-apigateway';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as apigw from 'aws-cdk-lib/aws-apigateway'
 
 export class YakarFarmhouseBookingsStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, config: BuildConfig, props?: StackProps) {
     super(scope, id, props);
     
-    // Create an S3 bucket for static website hosting
+    // 1. Create an S3 bucket for static website hosting
     const staticWebsiteBucket = new s3.Bucket(this, 'MyStaticWebsiteBucket', {
       websiteIndexDocument: 'templates/index.html', // Set the index document
       websiteErrorDocument: 'teamplates/error.html', // Set the error document
@@ -31,82 +25,62 @@ export class YakarFarmhouseBookingsStack extends Stack {
       billingMode: BillingMode.PAY_PER_REQUEST,
     });
 
-    // 2. Create our API Gateway
-    const api = new RestApi(this, 'RestAPI', {
-      restApiName: 'RestAPI',
-      defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS,
-        allowMethods: Cors.ALL_METHODS,
-      },
-      apiKeySourceType: ApiKeySourceType.HEADER,
-    });
+    // 2. Create our Lambda functions to handle requests
+    const apiFunction = this.buildAPIFunction(config)
 
-    // 3. Create our API Key
-    const apiKey = new ApiKey(this, 'ApiKey');
+    // 3: Create API gateway
+    const apiGateway = this.buildAPIGateway(config, apiFunction)
 
-    // 4. Create a usage plan and add the API key to it
-    const usagePlan = new UsagePlan(this, 'UsagePlan', {
-      name: 'Usage Plan',
-      apiStages: [
-        {
-          api,
-          stage: api.deploymentStage,
-        },
-      ],
-    });
+    // 4. Grant our Lambda functions access to our DynamoDB table
+    dbTable.grantReadWriteData(apiFunction);
 
-    usagePlan.addApiKey(apiKey);
-
-    // 5. Create our Lambda functions to handle requests
-    const postsLambda = new lambda.Function(this, 'Function', {
-      runtime: lambda.Runtime.PYTHON_3_12,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, 'lambda-handler')),
-    });
-
-    const postLambda = new NodejsFunction(this, 'PostLambda', {
-      entry: 'resources/endpoints/post.ts',
-      handler: 'handler',
-      environment: {
-        TABLE_NAME: dbTable.tableName,
-      },
-    });
-
-    // 6. Grant our Lambda functions access to our DynamoDB table
-    dbTable.grantReadWriteData(postsLambda);
-    dbTable.grantReadWriteData(postLambda);
-
-    // 7. Define our API Gateway endpoints
-    const posts = api.root.addResource('posts');
-    const post = posts.addResource('{id}');
-
-    // 8. Connect our Lambda functions to our API Gateway endpoints
-    const postsIntegration = new LambdaIntegration(postsLambda);
-    const postIntegration = new LambdaIntegration(postLambda);
-
-    // 9. Define our API Gateway methods
-    posts.addMethod('GET', postsIntegration, {
-      apiKeyRequired: true,
-    });
-    posts.addMethod('POST', postsIntegration, {
-      apiKeyRequired: true,
-    });
-
-    post.addMethod('GET', postIntegration, {
-      apiKeyRequired: true,
-    });
-    post.addMethod('DELETE', postIntegration, {
-      apiKeyRequired: true,
-    });
-
-    // Misc: Outputs
-    new CfnOutput(this, 'API Key ID', {
-      value: apiKey.keyId,
-    });
     // Output the website URL
     new CfnOutput(this, 'WebsiteURL', {
       value: staticWebsiteBucket.bucketWebsiteUrl, // URL for static website
       description: 'The URL of the static website bucket',
     });
+  }
+  
+  private buildAPIFunction(config: BuildConfig){
+    return new lambda.Function(this, 'APILambda', {
+      runtime:lambda.Runtime.PYTHON_3_9,
+      code: lambda.Code.fromAsset('deploy.zip'),
+      handler: 'functions/main.handler',
+      environment: {
+        LOG_LEVEL: config.logLevel,
+        REGION: config.region,
+        ENVIRONMENT: config.environment
+      } 
+    });
+  }
+
+  private buildAPIGateway(config: BuildConfig, apiFunction: lambda.Function){
+    const api_gateway = new apigw.LambdaRestApi(this, 'APIGatway', {
+      restApiName: `BookingManagementAPI-${config.region}-${config.environment}`,
+      handler: apiFunction,
+      proxy: false
+    })
+
+    api_gateway.root.addResource('docs').addMethod('GET');
+
+    //TODO: add token authorizer
+    // const tokenAuthorizer = new apigw.TokenAuthorizer(this, 'Auothorizer',{
+    //   handler: lambda.Function.fromFunctionArn(this, 'CustomAuthorizer', config.auothorizer_arn),
+    //   identitySource: 'method.request.header.Authorization'
+    // })
+
+    api_gateway.root
+      .addResource('bookings')
+      .addResource('v1')
+      // TODO: add token authorizer
+      // .addProxy({
+      //   anyMethod: false,
+      //   defaultMethodOptions: {
+      //     authorizer: tokenAuthorizer
+      //   }
+      // })
+      .addMethod('POST');
+      
+    return api_gateway;
   }
 }

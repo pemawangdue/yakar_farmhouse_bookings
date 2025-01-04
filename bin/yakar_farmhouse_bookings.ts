@@ -2,20 +2,23 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { YakarFarmhouseBookingsStack } from '../lib/yakar_farmhouse_bookings-stack';
+import { BuildConfig, getConfig } from './build_config';
+import { CognitoUserPoolsAuthorizer } from 'aws-cdk-lib/aws-apigateway';
 
 const app = new cdk.App();
-new YakarFarmhouseBookingsStack(app, 'YakarFarmhouseBookingsStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const buildConfig: BuildConfig = getConfig(app)
+const env = {
+  account: buildConfig.accountId,
+  region: buildConfig.region
+}
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
-
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
-
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+const stack = new YakarFarmhouseBookingsStack(app, 'YakarFarmhouseBookingsStack', buildConfig, {
+  env
 });
+addTags(stack, buildConfig)
+
+function addTags(stack: YakarFarmhouseBookingsStack, config: BuildConfig) {
+  const tags = cdk.Tags.of(stack);
+  tags.add('ENVIRONMENT', config.environment)
+  tags.add('BUILD_DATE', config.buildDate)
+}
