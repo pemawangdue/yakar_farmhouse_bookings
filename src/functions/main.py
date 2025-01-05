@@ -4,7 +4,7 @@ import logging
 from fastapi import FastAPI, Request, status
 from mangum import Mangum
 from frameworks.dynamodb import DynamoDB
-
+from .models import BookingHistory
 
 logger = logging.getLogger("root")
 API_V1: str = "v1"
@@ -38,6 +38,14 @@ def find_or_generate_request_id(request):
 @app.get("/hello-world")
 def hello_world():
     return {"message": "Hello World"}
+
+@app.post(f"/{API_V1}/booking",
+          response_model=BookingHistory)
+def get_bookings(request: Request):
+    request_id = request.state.request_id
+    dynamodb_client = DynamoDB()
+    dynamodb_client.get_all_items_with_pagination()
+    return 
 
 if __name__ == "__main__":
     import uvicorn
