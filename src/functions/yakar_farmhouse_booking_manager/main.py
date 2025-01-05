@@ -3,8 +3,9 @@ import uuid
 import logging
 from fastapi import FastAPI, Request, status
 from mangum import Mangum
-from frameworks.dynamodb import DynamoDB
-from .models import BookingHistory
+from src.functions.yakar_farmhouse_booking_manager import running_in_aws
+from src.frameworks.dynamodb import DynamoDB
+from src.functions.yakar_farmhouse_booking_manager.models import BookingHistory
 
 logger = logging.getLogger("root")
 API_V1: str = "v1"
@@ -19,8 +20,8 @@ app = FastAPI(
 async def request_id_and_logging_setup(request: Request, call_next):
     request_id = find_or_generate_request_id(request)
     request.state.request_id = request_id
-    logger.infof("HTTP {request.method} to {request.url} with request_id={request_id} and request_header={request.headers}")
-    response = call_next(request)
+    logger.info("HTTP {request.method} to {request.url} with request_id={request_id} and request_header={request.headers}")
+    response = await call_next(request)
     response.headers[REQUEST_ID_HEADER] = request_id
     return response
 
@@ -33,7 +34,7 @@ def find_or_generate_request_id(request):
         lambda_request_id = lambda_context.aws_request_id
         if lambda_request_id:
             return lambda_request_id
-    return uuid.uuid().__str__()
+    return uuid.uuid4().__str__()
 
 @app.get("/hello-world")
 def hello_world():
@@ -44,8 +45,9 @@ def hello_world():
 def get_bookings(request: Request):
     request_id = request.state.request_id
     dynamodb_client = DynamoDB()
-    dynamodb_client.get_all_items_with_pagination()
-    return 
+    response = dynamodb_client.get_item(table_name="")
+    return BookingHistory(response)
+    
 
 if __name__ == "__main__":
     import uvicorn

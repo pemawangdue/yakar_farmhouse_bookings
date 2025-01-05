@@ -20,8 +20,10 @@ export class YakarFarmhouseBookingsStack extends Stack {
   
     // 2. Create our DynamoDB table
     const dbTable = new Table(this, 'DbTable', {
-      partitionKey: { name: 'pk', type: AttributeType.STRING },
-      removalPolicy: RemovalPolicy.DESTROY,
+      tableName: `BookingManagement-${config.region}-${config.environment}`,
+      partitionKey: { name: 'booking_id', type: AttributeType.STRING },
+      sortKey: { name: 'created_at_date_time', type: AttributeType.STRING},
+      removalPolicy: RemovalPolicy.RETAIN,
       billingMode: BillingMode.PAY_PER_REQUEST,
     });
 

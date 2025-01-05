@@ -15,5 +15,10 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 
 ---
+## Developer guide
+Use the following command to set the Python path in powershell
+```
+$env:PYTHONPATH="C:\Users\Pema Wangdue\workspace\projects\yakar_farmhouse_bookings;$env:PYTHONPATH"
+```
 Template reference 
 1. [materialize css](https://materializecss.com/getting-started.html)

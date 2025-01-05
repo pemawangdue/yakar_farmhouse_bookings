@@ -22,7 +22,7 @@ def convert_dynamodb_response_to_json(response):
 
 
 class DynamoDB:
-    def __init__(self, client: boto3.client):
+    def __init__(self, client: boto3.client=None):
         self.client = client if client else boto3.client('dynamodb')
 
     def get_item(self, table_name: str, values: list, columns: list, consistent_read=False):
