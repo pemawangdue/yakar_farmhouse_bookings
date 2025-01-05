@@ -20,7 +20,7 @@ addTags(stack, buildConfig);
 
 function buildDeploymentArchifact(){
   console.log('Building Lambda deployment artifact');
-  execSync('./pipeline_scripts/build-deploy.sh');
+  execSync('./pipeline_scripts/build_artifacts.sh');
   console.log('Lambda deployment artifact build successfully');
 }
 
