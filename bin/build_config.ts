@@ -8,7 +8,6 @@ export interface BuildConfig {
     readonly buildDate: string    
 }
 
-
 export function getConfig(app: cdk.App): BuildConfig{
     const ENV_INPUT = 'env'
     const env = app.node.tryGetContext(ENV_INPUT)
@@ -29,7 +28,6 @@ export function getConfig(app: cdk.App): BuildConfig{
     }
     return buildConfig(env, cdkContextConfig);
 }
-
 
 function buildConfig(env: any, cdkContextConfig: any): BuildConfig {
     return {

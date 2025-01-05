@@ -69,5 +69,3 @@ class DynamoDB:
         for page in page_iterator:
             result["Items"].extend(page.get("Items", []))
         return convert_dynamodb_response_to_json(result)
-
-    
